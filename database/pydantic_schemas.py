@@ -3,6 +3,7 @@ from typing import List
 
 # why...? do we really need inheritance here. 
 class Painting(BaseModel):
+    id: int
     title: str
     type: str
     dimensions: str
