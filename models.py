@@ -1,22 +1,17 @@
-from pydantic import BaseModel
-from typing import Optional, List
-from uuid import UUID, uuid4
-from enum import Enum
+
+from sqlalchemy import  Column, Integer, String, Boolean, Float
+from database import Base
 
 
-class Gender(str, Enum):
-    male = "male"
-    female = "female"
-
-
-class Role(str, Enum):
-    admin = "admin"
-    user = "user"
-
-
-class User(BaseModel):
-    id: Optional[UUID] = uuid4()
-    first_name: str
-    last_name: str
-    gender: Gender
-    roles: List[Role]
+# TABLES: 
+class Painting(Base):
+    __tablename__ = 'paintings'
+    id = Column(Integer, primary_key=True)
+    title = Column(String(256), unique=True)
+    type = Column(String, nullable=False)
+    dimensions = Column(String, nullable=False)
+    sold = Column(Boolean, nullable=False)
+    giclee = Column(Boolean, default=False)
+    imageUrl = Column(String, nullable=False)
+    price = Column(Float)
+    info = Column(String)
