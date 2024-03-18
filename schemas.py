@@ -1,7 +1,10 @@
 from pydantic import BaseModel
 
+class KelvBase(BaseModel) : 
+    class Config: 
+        orm_mode = True
 
-class PaintingCreateSchema (BaseModel) : 
+class PaintingCreate (KelvBase) : 
     title: str
     type: str
     dimensions: str
@@ -11,7 +14,7 @@ class PaintingCreateSchema (BaseModel) :
     price: float
     info: str
 
-class PaintingSchema (BaseModel) : 
+class Painting (KelvBase) : 
     id: int
     title: str
     type: str

@@ -1,8 +1,8 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Depends
+from database import Base, engine, SessionLocal
 from sqlalchemy.orm import Session
-from database import Base, engine
-from models import Painting
-from schemas import PaintingSchema, PaintingCreateSchema
+import models
+import schemas
 
 # Create the database
 Base.metadata.create_all(engine)
@@ -13,20 +13,33 @@ app = FastAPI()
 
 
 
+
+# Helper function to get database session
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+
+
+
 # GET ALL 
-@app.get("/paintings", response_model=list[PaintingSchema])
-def get_all():
-    session = Session(bind=engine, expire_on_commit=False)
-    paintings = session.query(Painting).all()
+@app.get("/paintings", response_model=list[schemas.Painting])
+def get_all(session: Session = Depends(get_session)):
+    
+    paintings = session.query(models.Painting).all()
     session.close()
     return paintings
 
 # GET BY ID
-@app.get("/paintings/{id}", response_model=PaintingSchema)
-def get_by_id(id: int):
+@app.get("/paintings/{id}", response_model=schemas.Painting)
+def get_by_id(id: int, session: Session = Depends(get_session)):
 
-    session = Session(bind=engine, expire_on_commit=False)
-    painting = session.query(Painting).get(id)
+    
+    painting = session.query(models.Painting).get(id)
 
     if not painting:
         raise HTTPException(status_code=404, detail=f"painting with id {id} not found")
@@ -36,8 +49,8 @@ def get_by_id(id: int):
     return painting
 
 # GET PORTFOLIO PAGE
-@app.get("/paintings/portfolio/{page}", response_model=list[PaintingSchema])
-def get_page(page: str):
+@app.get("/paintings/portfolio/{page}", response_model=list[schemas.Painting])
+def get_page(page: str, session: Session = Depends(get_session)):
     return {f'message": "Get paintings for page: {page}'}
 
 
@@ -59,14 +72,14 @@ def get_paintings_by_search():
 
 
 # INSERT SINGLE
-@app.post("/painting", status_code=status.HTTP_201_CREATED, response_model=str)
-def add_painting(painting: PaintingCreateSchema):
+@app.post("/painting", status_code=status.HTTP_201_CREATED, response_model=schemas.Painting)
+def add_painting(painting: schemas.PaintingCreate, session: Session = Depends(get_session)):
 
     # INFO: While a connection represents the communication link,
     # a session encapsulates the user-specific context and ongoing activities within that connection
-    session = Session(bind=engine, expire_on_commit=False)
+    
 
-    newPainting = Painting(
+    newPainting = models.Painting(
         title = painting.title,
         type = painting.type, 
         dimensions = painting.dimensions,
@@ -80,16 +93,18 @@ def add_painting(painting: PaintingCreateSchema):
     session.add(newPainting)
     session.commit()
 
-    # get the id - it was added automatically presumably because there was a field called id - magic
-    id = newPainting.id
+    # so we get the id that was just assigned when the new painting was inserted.
+    session.refresh(newPainting)
 
-    return {f'New Painting Added. Title: {newPainting.title}, id: {id}'}
+    session.close()
+
+    return newPainting
 
 
 
 # INSERT BULK
-@app.post("/paintings", status_code=status.HTTP_201_CREATED)
-def add_paintings(paintings: list[PaintingCreateSchema]):
+@app.post("/paintings", status_code=status.HTTP_201_CREATED, response_model=list[schemas.Painting])
+def add_paintings(paintings: list[schemas.PaintingCreate], session: Session = Depends(get_session)):
 
      
     return {"message": "Not yet implemented"}
@@ -101,11 +116,11 @@ def add_paintings(paintings: list[PaintingCreateSchema]):
 
 # UPDATE
 # Note: Painting request does not hold id but if it is given, nothing explodes, additional fields are fine
-@app.put("/painting/{id}", response_model=PaintingSchema)
-def update_Painting(id: int, paintingUpdate: PaintingCreateSchema):
+@app.put("/painting/{id}", response_model=schemas.Painting)
+def update_Painting(id: int, paintingUpdate: schemas.PaintingCreate, session: Session = Depends(get_session)):
 
-    session = Session(bind=engine, expire_on_commit=False)
-    painting = session.query(Painting).get(id)
+    
+    painting = session.query(models.Painting).get(id)
 
     if painting:
         print(f'a painting was found - title: {painting.title}')
@@ -135,9 +150,9 @@ def update_Painting(id: int, paintingUpdate: PaintingCreateSchema):
 
 # DELETE BY ID
 @app.delete("/paintings/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_By_Id(id: int):
-    session = Session(bind=engine, expire_on_commit=False)
-    painting = session.query(Painting).get(id)
+def delete_By_Id(id: int, session: Session = Depends(get_session)):
+    
+    painting = session.query(models.Painting).get(id)
 
     if painting:
         session.delete(painting)
