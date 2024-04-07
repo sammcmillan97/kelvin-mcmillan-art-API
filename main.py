@@ -55,13 +55,18 @@ def get_originals(session: Session = Depends(get_session)):
 
 
 # [WIP] GET ORIGINALS BY (Painting) ID
-@app.get("/paintings/original/{id}", response_model=schemas.Original)
-def get_originals(session: Session = Depends(get_session)):
+@app.get("/paintings/originals/{id}", response_model=schemas.Original)
+def get_original_by_id(id: int, session: Session = Depends(get_session)):
     
     print("Get Orgininals")
-    paintings = session.query(models.Painting).filter(models.Painting.sold==False).all()
+    painting = session.query(models.Painting).get(id)
+    if not painting:
+        raise HTTPException(status_code=404, detail=f"no painting found with given id: {id}")
+    
+    if painting.sold == True:
+        raise HTTPException(status_code=400, detail=f"painting {id} - {painting.title} was found but is not available as an original")
     session.close()
-    return paintings
+    return painting
 
 
 # GET BY ID
@@ -74,7 +79,6 @@ def get_by_id(id: int, session: Session = Depends(get_session)):
     if not painting:
         raise HTTPException(status_code=404, detail=f"painting with id {id} not found")
         
-
     session.close()
     return painting
 
@@ -90,19 +94,6 @@ def get_portfolio_page(page: str, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail=f"No paintings found for given page: {page}")
     
     return paintings
-
-
-
-# GET PAGE ITEMS
-## getting the weird af bug 
-@app.get("/paintings/pageitems", response_model=list[schemas.PageItem])
-def get_page_items(session: Session = Depends(get_session)):
-
-    print("Getting page items")
-    page_items = session.query(models.PageItem).all()
-    session.close()
-    return page_items
-
 
 
 
