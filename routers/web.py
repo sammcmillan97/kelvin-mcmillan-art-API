@@ -18,7 +18,7 @@ def get_all(session: Session = Depends(get_session)):
 # GET ALL ORIGINALS
 @router.get("/paintings/originals", response_model=list[schemas.Original])
 def get_originals(session: Session = Depends(get_session)):
-    paintings = session.query(models.Painting).filter(not models.Painting.sold).all()
+    paintings = session.query(models.Painting).filter(models.Painting.sold==False).all()
     session.close()
     return paintings
 
@@ -50,10 +50,9 @@ def get_by_id(id: int, session: Session = Depends(get_session)):
 
 
 # GET PORTFOLIO PAGE
-@router.get("/paintings/{page}", response_model=list[schemas.Painting])
-def get_page(page: str, session: Session = Depends(get_session)):
+@router.get("/paintings/portfolio/{page}", response_model=list[schemas.Painting])
+def get_portfolio_page(page: str, session: Session = Depends(get_session)):
     paintings = session.query(models.Painting).join(models.PageItem).filter(models.PageItem.page == page).all()
-
     if not paintings:
         raise HTTPException(status_code=404, detail=f"No paintings found for given page: {page}")
 
