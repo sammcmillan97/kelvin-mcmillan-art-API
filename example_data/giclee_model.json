@@ -1,0 +1,15 @@
+{
+    "id" : "Int",
+    "painting" : {
+        "title": "String",
+        "type": "String",
+        "dimensions": "String",
+        "info": "String"
+    },
+    "gicleeOptions" :  [
+        {
+            "dimensions" : "string",
+            "price" : "Int"            
+        }
+    ]
+}
