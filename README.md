@@ -18,4 +18,3 @@ uvicorn - https://www.uvicorn.org/
 ### Database:
 pip install sqlite
 Sqlite - https://docs.python.org/3/library/sqlite3.html
-
