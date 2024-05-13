@@ -48,4 +48,33 @@ class PageItem (KelvBase):
     page_order: int
 
 
+class GicleeOptionAttribute: 
+    id: int
+    dimensions: str
+    price: int
+
+
+class GicleeOption(KelvBase):
+    option_attribute_id: int # should the UI recieve the id, or the full option attribute object...?
+    gicleeId: int
+
+
+class Giclee(KelvBase):
+    id: int
+    paintingId: int
+    # can I just return a whole painting here?
+    options: List[GicleeOption] # more complex object
+    page_order: int
+
+class GicleeCreate(KelvBase):
+    paintingId: int
+    page_order: int # does not have to be provided. Could use auto increment
+    paintingId: int
+    goa_ids: List[int] # when creating, provide a list of GOA ids
+
+
+
+    
+
+
 

@@ -66,3 +66,9 @@ def delete_by_id(id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail=f"painting with id {id} not found")
 
     return None
+
+
+# ADD single Giclee for exisitng painting
+@router.post("/giclee", status_code=status.HTTP_201_CREATED)
+def add_giclee(giclee: schemas.GicleeCreate, session: Session = Depends(get_session)):
+    return service.add_giclee(session, giclee)

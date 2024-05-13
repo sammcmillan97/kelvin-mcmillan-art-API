@@ -36,7 +36,20 @@ def add_painting(session: Session, painting: schemas.PaintingCreate) -> models.P
             new_page_item = models.PageItem(page=page, page_order=1, painting_id=newPainting.id)
             session.add(new_page_item)
     
+# Could now add giclee if giclee is true and giclee options are also not null.
 
     session.commit()
     session.close()
     return newPainting
+
+
+
+def add_giclee(session: Session, giclee: schemas.GicleeCreate):
+    print(f"adding giclee for painting with id: {giclee.paintingId}")
+
+    print(f"page_order: {giclee.page_order}")
+
+    for option in giclee.options:
+        print(f"giclee size price option: {option}")
+
+    return "giclee added... maybe"
