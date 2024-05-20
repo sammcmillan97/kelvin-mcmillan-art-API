@@ -4,8 +4,6 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 
-# TABLES: 
-
 
 class Painting(Base):
     __tablename__ = 'paintings'
@@ -22,12 +20,10 @@ class Painting(Base):
     galleryName = Column(String, nullable=True)
     galleryLink = Column(String, nullable=True)
 
-    # Painting --> PageItem
-    # 1:N
+    # Painting --> PageItem, 1:N
     page_items = relationship("PageItem", back_populates="painting")
     
-    # Painting --> Giclee
-    # 1:1
+    # Painting --> Giclee, 1:1
     child_giclee = relationship("Giclee", back_populates="giclee_parent_painting", uselist=False)
 
 
@@ -39,10 +35,8 @@ class PageItem(Base):
     painting_id = Column(Integer, ForeignKey('paintings.id'))
     page_order = Column(Integer)
 
-   # PageItem <-- Painting
-   # N:1
+   # PageItem <-- Painting, N:1
     painting = relationship("Painting", back_populates="page_items")
-
 
 
 
@@ -52,36 +46,27 @@ class Giclee(Base):
     page_order = Column(Integer)
     painting_id = Column(Integer, ForeignKey('paintings.id'))
 
-    
-    # Giclee <-- Painting
-    # 1:1 
+    # Giclee <-- Painting, 1:1 
     giclee_parent_painting = relationship ("Painting", back_populates="child_giclee", uselist=False)
 
-    # Giclee --> GicleeOption
-    # 1:N
+    # Giclee --> GicleeOption, 1:N
     children_options = relationship("GicleeOption", back_populates="parent_giclee")
 
 
 
-
-# represents a giclee size and price option that is available for the parent painting
 class GicleeOption(Base):
     __tablename__ = 'giclee_option'
     id = Column(Integer, primary_key=True)
-    gicleeId = Column(Integer, ForeignKey('paintings.id'))
+    gicleeId = Column(Integer, ForeignKey('giclees.id'))
     option_attribute_id = Column(Integer, ForeignKey("giclee_option_attributes.id"))
     
-    # GicleeOption <-- Giclee
-    # N:1  -  multiple GicleeOptions for a single Giclee)
+    # GicleeOption <-- Giclee, N:1 
     parent_giclee = relationship("Giclee", back_populates="children_options")
 
-    # GicleeOption <-- GicleeOptionAttributes
-    # 1:1  -  A single GO is related to a single GAO
-    parent_attributes = relationship("GicleeOptionAttributes", back_populates="children_options", uselist=False)
+    # GicleeOption <-- GicleeOptionAttributes, N:1 
+    parent_attributes = relationship("GicleeOptionAttributes", back_populates="children_options")
 
    
-
-
 
 class GicleeOptionAttributes(Base):
     __tablename__='giclee_option_attributes'
@@ -89,7 +74,6 @@ class GicleeOptionAttributes(Base):
     dimensions=Column(String)
     price = Column(Integer)
 
-    # GicleeOptionAttributes --> GicleeOption
-    # 1:n, a single GOA record will be related to many child GO records
-    child_options = relationship("GicleeOption", back_populates="parent_attributes")
+    # GicleeOptionAttributes --> GicleeOption, 1:N
+    children_options = relationship("GicleeOption", back_populates="parent_attributes")
 
